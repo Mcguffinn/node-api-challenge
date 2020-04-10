@@ -3,10 +3,12 @@ const express = require('../node_modules/express');
 const router = express.Router();
 
 const Projects = require('../data/helpers/projectModel');
+const Actions = require('../data/helpers/actionModel');
 
 router.get('/', async (req,res) => {
-    const proc = await Projects.get()
+    
     try{
+        const proc = await Projects.get()
         res.status(200).json({proc});
     }
     catch(err){
@@ -15,8 +17,9 @@ router.get('/', async (req,res) => {
 })
 
 router.get('/:id', async (req, res) =>{
-    const proc = await Projects.getProjectActions(req.params.id);
+    
     try{
+        const proc = await Projects.getProjectActions(req.params.id);
         res.status(200).json({proc});
     }
     catch(err){
@@ -24,5 +27,53 @@ router.get('/:id', async (req, res) =>{
     }
 })
 
+router.post('/:id', async (req, res) => {
+    try{
+        const action = Projects.insert(req.params.body)
+        res.status(202).json({message: "new project added!", action});
+    }
+    catch(error){
+        res.status(400).json({message: "Project not added...", error})
+    }
+})
+
+router.put('/:id', async (req, res) => {
+    const id = req.params.id
+    const changes = req.body
+    try{
+        const action = await Projects.update(id, changes);
+        console.log(action)
+        res.status(202).json({message: "new project updated!", action});
+    }
+    catch(err){
+        console.log(id, ...req.body)
+        res.status(400).json({message: "Project not found...", err})
+    }
+
+}) 
+
+router.delete('/:id', async (req, res) => {
+   
+    try{
+        const action = await Projects.remove(req.params.id);
+        res.status(200).json({message: "Project was deleted!", action})
+    }
+    catch(err){
+        res.status(400).json({message: "Action was not deleted...", err})
+    }
+})
+
+router.post('/:id/actions', async (req, res) =>{
+    const project_id = req.params.id
+    const data = {project_id, ...req.body}
+      
+    try{
+        const proc = await Actions.insert(data)
+        res.status(200).json({proc});
+    }
+    catch(err){
+        res.status(400).json({message: 'action was not posted'})
+    }
+})
 
 module.exports = router;

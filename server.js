@@ -22,7 +22,7 @@ server.get('/', (req,res) =>{
 
 //Terminal logger
 function logger(req, res, next) {
-    console.log(`${req.method} Request to ${req.originalURl}`);
+    console.log(`${req.method} Request to ${req.originalUrl}`);
 
     next();
 }

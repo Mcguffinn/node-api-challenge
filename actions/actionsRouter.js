@@ -4,21 +4,10 @@ const router = express.Router();
 
 const Actions = require('../data/helpers/actionModel');
 
-router.post('/', validateID, async (req, res) =>{
-    const action = await Actions.insert(req.body)
-
-    try{
-        console.log(req.body)
-        action
-    }
-    catch(err){
-        res.status(400).json({message: 'action was not posted'})
-    }
-})
-
 router.get('/', async (req, res) => {
-    const action = await Actions.get()
+    
     try{
+        const action = await Actions.get()
         res.status(200).json({action});
     }
     catch(err){
@@ -27,8 +16,9 @@ router.get('/', async (req, res) => {
 })
 
 router.get('/:id', async (req, res) => {
-    const action = await Actions.get(req.params.id)
+    
     try{
+        const action = await Actions.get(req.params.id)
         res.status(200).json({action});
     }
     catch(err){
@@ -36,18 +26,51 @@ router.get('/:id', async (req, res) => {
     }
 })
 
+router.put('/:id',  validateID, async (req, res) => {
+    const id = req.params.id
+    const changes = req.body
+    try{
+        const action = await Actions.update(id, changes);
+        console.log(action)
+        res.status(202).json({message: "new action added!", action});
+    }
+    catch(err){
+        console.log(id, ...req.body)
+        res.status(400).json({message: "Action not found...", err})
+    }
+
+})
+
+router.delete('/:id', validateID, async (req, res) => {
+ 
+    try{
+        const action = await Actions.remove(req.params.id);
+        res.status(200).json({message: "Action was deleted!", action})
+    }
+    catch(err){
+        res.status(400).json({message: "Action was not deleted...", err})
+    }
+})
+
+
 //middleware
 
-async function validateID(req, res, next) {
-    const id = await Actions.get(req.params.id);
+function validateID(req, res, next) {
+    Actions.get(req.params.id)
+        .then( x =>{
+            if (x) {
 
-    try{
-        id
-        next()
-    }
-    catch{
-        res.status(404).json({message: 'invalid action id'})
-    }
+                next()
+
+            } else {
+
+                res.status(404).json({message: 'invalid user id'})
+            }
+        })
+
+        .catch(err =>{
+        res.status(500).json({message: "Server error", err})
+        })
     
 }
 
