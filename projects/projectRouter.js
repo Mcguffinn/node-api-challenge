@@ -17,9 +17,9 @@ router.get('/', async (req,res) => {
 })
 
 router.get('/:id', async (req, res) =>{
-    
+    // const id = req.params.id
     try{
-        const proc = await Projects.getProjectActions(req.params.id);
+        const proc = await Projects.get(req.params.id);
         res.status(200).json({proc});
     }
     catch(err){
@@ -27,13 +27,15 @@ router.get('/:id', async (req, res) =>{
     }
 })
 
-router.post('/:id', async (req, res) => {
+router.post('/', async (req, res) =>{
+    const project = req.body
+      
     try{
-        const action = Projects.insert(req.params.body)
-        res.status(202).json({message: "new project added!", action});
+        const proc = await Projects.insert(project)
+        res.status(200).json({proc});
     }
-    catch(error){
-        res.status(400).json({message: "Project not added...", error})
+    catch(err){
+        res.status(400).json({message: 'action was not posted', err});
     }
 })
 
@@ -46,7 +48,7 @@ router.put('/:id', async (req, res) => {
         res.status(202).json({message: "new project updated!", action});
     }
     catch(err){
-        console.log(id, ...req.body)
+        console.log(id, req.body)
         res.status(400).json({message: "Project not found...", err})
     }
 
@@ -75,5 +77,32 @@ router.post('/:id/actions', async (req, res) =>{
         res.status(400).json({message: 'action was not posted'})
     }
 })
+
+router.get('/:id/actions', validateID, async (req, res) =>{
+    try{
+        const proc = await Actions.get(req.params.id);
+        res.status(200).json({proc});
+    }
+    catch(err){
+        res.status(404).json({message: "No project actions found...", err})
+    }
+})
+
+function validateID(req, res, next) {
+    Actions.get(req.params.id)
+        .then( x =>{
+            if (x) {
+                next()
+            } else {
+
+                res.status(404).json({message: 'invalid user id'})
+            }
+        })
+
+        .catch(err =>{
+        res.status(500).json({message: "Server error", err})
+        })
+    
+}
 
 module.exports = router;
